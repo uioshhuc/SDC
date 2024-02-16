@@ -1,12 +1,10 @@
 import torch
 import torch.nn as nn
-import math
 import torchvision.transforms as transforms
 import torchvision as tv
 from torch.utils.data import DataLoader
 import os
 import datetime
-import numpy as np
 import models
 import distributed_utils as utils
 
@@ -162,8 +160,6 @@ if __name__ == '__main__':
     model_names = [
                    # 'resnet20_Lt1_Lt2',
                    # 'resnet20_ang1_ang2',
-                    # 'resnet20_sdc1x1s_Lt',
-                    # 'resnet20_sdc1x1s_ang',
                    ]
     load_paths = ['']
     load_paths += ['' for i in range(model_names.__len__()-1)]

@@ -1,7 +1,5 @@
 import models
 import torch
-from torch.autograd import Variable
-import numpy as np
 from thop import profile
 device = torch.device('cuda:0' if torch.cuda.is_available() else "cpu")
 print('using {} device'.format(device))

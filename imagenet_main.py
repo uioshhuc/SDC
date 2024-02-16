@@ -1,12 +1,10 @@
 import torch
 import torch.nn as nn
-import math
 import torchvision.transforms as transforms
 import torchvision
 from torch.utils.data import DataLoader
 import os
 import datetime
-import numpy as np
 import models
 import distributed_utils as utils
 

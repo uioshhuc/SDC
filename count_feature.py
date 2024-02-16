@@ -1,24 +1,15 @@
 import os
-
-import numpy
 import torch
-import torchvision as tv
-import torchvision.transforms as transforms
+import torchvision
 import torch.nn as nn
-import torch.optim as optim
-import argparse
 import torchvision.transforms as transforms
-import torchvision as tvm
 from torch.utils.data import DataLoader
 import skimage.data
 import skimage.io
 import skimage.transform
 import numpy as np
-import matplotlib.pyplot as plt
-import torchvision.models as models
-from PIL import Image
 import cv2
-import models_test
+import models
 
 class FeatureExtractor(nn.Module):
     def __init__(self, submodule, extracted_layers):
@@ -28,7 +19,7 @@ class FeatureExtractor(nn.Module):
 
     def forward(self, x):
         outputs = {}
-        out1, out = self.submodule(x)
+        out1, out = self.submodule(x, figure=True)
         outputs["out1"] = out1
 
         return outputs
@@ -47,42 +38,49 @@ def make_dirs(path):
 
 def getData():  
     #cifar10
-    # transform = transforms.Compose([
-    #     transforms.RandomCrop(32, 4),
-    #     # transforms.RandomResizedCrop(32, scale=(0.5, 1.0)),  
-    #     transforms.RandomHorizontalFlip(),  
-    #     transforms.ToTensor(),  
-    #     transforms.Normalize(mean=[0.485, 0.456, 0.406],  
-    #                          std=[0.229, 0.224, 0.225])
-    # ])
-    # transform_val = transforms.Compose([
-    #     transforms.ToTensor(),  
-    #     transforms.Normalize(mean=[0.485, 0.456, 0.406],  
-    #                          std=[0.229, 0.224, 0.225])
-    # ])
-
-    #ImageNet
     transform = transforms.Compose([
-        transforms.RandomResizedCrop((224, 224)),
-        transforms.RandomHorizontalFlip(),  
-        transforms.ToTensor(),  
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],  
+        transforms.RandomCrop(32, 4),
+        # transforms.RandomResizedCrop(32, scale=(0.5, 1.0)),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
-        
     ])
     transform_val = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),  
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],  
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
-
     ])
-    trainset = tv.datasets.CIFAR10(root='../data', train=True, transform=transform, download=True)  
-    testset = tv.datasets.CIFAR10(root='../data', train=False, transform=transform_val, download=True)  
+    trainset = torchvision.datasets.CIFAR10(root='../data', train=True, transform=transform, download=True)
+    valset = torchvision.datasets.CIFAR10(root='../data', train=False, transform=transform_val, download=True)
+
+    # #ImageNet
+    # transform = transforms.Compose([
+    #     transforms.RandomResizedCrop((224, 224)),
+    #     transforms.RandomHorizontalFlip(),
+    #     transforms.ToTensor(),
+    #     transforms.Normalize(mean=[0.485, 0.456, 0.406],
+    #                          std=[0.229, 0.224, 0.225])
+    #
+    # ])
+    # transform_val = transforms.Compose([
+    #     transforms.Resize(256),
+    #     transforms.CenterCrop(224),
+    #     transforms.ToTensor(),
+    #     transforms.Normalize(mean=[0.485, 0.456, 0.406],
+    #                          std=[0.229, 0.224, 0.225])
+    #
+    # ])
+    # trainset = torchvision.datasets.ImageFolder(
+    #     root='C:/Users\data\ImageNet_ILSVRC2012/train',
+    #     transform=transform)
+    #
+    # valset = torchvision.datasets.ImageFolder(
+    #     root='C:/Users\data\ImageNet_ILSVRC2012/val',
+    #     transform=transform_val)
 
     train_loader = DataLoader(trainset, batch_size=8, shuffle=True)  
-    test_loader = DataLoader(testset, batch_size=1, shuffle=False)  
+    test_loader = DataLoader(valset, batch_size=1, shuffle=False)
     return train_loader, test_loader, trainset
 def get_feature(net, model_name, load_path):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -135,11 +133,9 @@ if __name__ == '__main__':
     device = torch.device('cuda:0' if torch.cuda.is_available() else "cpu")
     print('using {} device'.format(device)) 
     model_names = [
-    
-        # 'imagenet_ResNet18_Lt',
-        # 'imagenet_ResNet18_ang',
+                # 'resnet20_Lt1_Lt2',
                    ]
-    load_paths = ['./save_weights/weights_imagenet/modelBest_' + name +'.pth' for name in model_names]
+    load_paths = ['./save_weights/weights_cifar/modelBest_' + name +'.pth' for name in model_names]
     for model_name, load_path in zip(model_names, load_paths):
-        net = getattr(models_test, model_name)().to(device)
+        net = getattr(models, model_name)().to(device)
         get_feature(net, model_name, load_path)
